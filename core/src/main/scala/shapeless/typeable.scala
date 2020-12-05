@@ -195,37 +195,15 @@ object Typeable extends TupleTypeableInstances with LowPriorityTypeable {
   implicit def eitherTypeable[A, B]
     (implicit castA: Typeable[A], castB: Typeable[B]): Typeable[Either[A, B]] =
       new Typeable[Either[A, B]] {
-        def cast(t: Any): Option[Either[A, B]] = {
-          t.cast[Left[A, B]] orElse t.cast[Right[A, B]]
-        }
+        def cast(t: Any): Option[Either[A, B]] =
+          if(t == null) None
+          else t match {
+            case Left(l)  => l.cast[A].map(_ => t.asInstanceOf[Either[A, B]])
+            case Right(r) => r.cast[A].map(_ => t.asInstanceOf[Either[A, B]])
+            case _        => None
+          }
         def describe = s"Either[${castA.describe}, ${castB.describe}]"
       }
-
-  /** Typeable instance for `Left`. */
-  implicit def leftTypeable[A, B](implicit castA: Typeable[A]): Typeable[Left[A, B]] =
-    new Typeable[Left[A, B]] {
-      def cast(t: Any): Option[Left[A, B]] = {
-        if(t == null) None
-        else if(t.isInstanceOf[Left[_, _]]) {
-          val l = t.asInstanceOf[Left[_, _]]
-          for(a <- l.value.cast[A]) yield t.asInstanceOf[Left[A, B]]
-        } else None
-      }
-      def describe = s"Left[${castA.describe}]"
-    }
-
-  /** Typeable instance for `Right`. */
-  implicit def rightTypeable[A, B](implicit castB: Typeable[B]): Typeable[Right[A, B]] =
-    new Typeable[Right[A, B]] {
-      def cast(t: Any): Option[Right[A, B]] = {
-        if(t == null) None
-        else if(t.isInstanceOf[Right[_, _]]) {
-          val r = t.asInstanceOf[Right[_, _]]
-          for(b <- r.value.cast[B]) yield t.asInstanceOf[Right[A, B]]
-        } else None
-      }
-      def describe = s"Right[${castB.describe}]"
-    }
 
   /** Typeable instance for `Traversable`.
    *  Note that the contents be will tested for conformance to the element type. */

@@ -1004,8 +1004,6 @@ class SerializationTests {
     assertSerializable(Typeable[Foo with Bar])
     assertSerializable(Typeable[Option[Int]])
     assertSerializable(Typeable[Either[Int, String]])
-    assertSerializable(Typeable[Left[Int, String]])
-    assertSerializable(Typeable[Right[Int, String]])
     assertSerializable(Typeable[List[Int]])
     assertSerializable(Typeable[Map[Int, String]])
     assertSerializable(Typeable[Wibble])
